@@ -5,6 +5,6 @@
 azure-functions
 azure-functions-durable
 python-dotenv
-openai
+azure-ai-inference
 loguru
 tavily-python

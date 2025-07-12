@@ -3,28 +3,37 @@ import azure.durable_functions as df
 
 from loguru import logger
 
-myApp = df.DFApp(http_auth_level=func.AuthLevel.ANONYMOUS)
+app = df.DFApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
-# An HTTP-triggered function with a Durable Functions client binding
-@myApp.route(route="orchestrators/{functionName}")
-@myApp.durable_client_input(client_name="client")
+# Register components
+from src.orchstrator.orchstrator import deepResearch_orchestrator
+
+from src.activity.generateFollowUp_activity import generateFollowUp_activity
+
+from src.entity.researchState_entity import researchState_entity
+
+
+# HTTPStart
+@app.route(route="deepresearch", methods=["GET", "POST"])
+@app.durable_client_input(client_name="client")
 async def http_start(req: func.HttpRequest, client):
-    function_name = req.route_params.get('functionName')
-    instance_id = await client.start_new(function_name)
-    response = client.create_check_status_response(req, instance_id)
-    return response
+    question = req.params.get("question")
+    if not question:
+        return func.HttpResponse(
+            " Question parameter is required.",
+            status_code=400,
+        )
+    logger.info(f"Received question: {question}")
+        
+    payload = {
+        "question": question,
+    }
+    
+    instance_id = await client.start_new(
+        "deepResearch_orchestrator",
+        client_input=(payload)
+    )
 
-# Orchestrator
-@myApp.orchestration_trigger(context_name="context")
-def hello_orchestrator(context):
-    logger.info("Starting hello_orchestrator")
-    result1 = yield context.call_activity("hello", "Seattle")
-    result2 = yield context.call_activity("hello", "Tokyo")
-    result3 = yield context.call_activity("hello", "London")
+    logger.info(f"Started orchestration with ID = '{instance_id}'.")
+    return client.create_check_status_response(req, instance_id)
 
-    return [result1, result2, result3]
-
-# Activity
-@myApp.activity_trigger(input_name="city")
-def hello(city: str):
-    return f"Hello {city}"
