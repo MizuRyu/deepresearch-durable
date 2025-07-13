@@ -6,10 +6,18 @@ from loguru import logger
 app = df.DFApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 # Register components
+# orchestrator
 from src.orchstrator.orchstrator import deepResearch_orchestrator
 
+# activity
 from src.activity.generateFollowUp_activity import generateFollowUp_activity
+from src.activity.generateSearchQuery_activity import generateSearchQuery_activity
+from src.activity.webResearch_activity import webResearch_activity
+from src.activity.contentSummarize_actviity import contentSummarize_activity
+from src.activity.reflection_activity import reflection_activity
+from src.activity.generateReport_activity import generateReport_activity
 
+# entity
 from src.entity.researchState_entity import researchState_entity
 
 

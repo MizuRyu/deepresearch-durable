@@ -1,0 +1,44 @@
+{
+  "query": "durable functions ベストプラクティス zenn",
+  "follow_up_questions": null,
+  "answer": "Durable Functions best practices include avoiding non-deterministic operations in orchestrator functions. Use ContinueAsNew for long-running tasks. Monitor and troubleshoot using Azure's diagnostic tools.",
+  "images": [],
+  "results": [
+    {
+      "url": "https://zenn.dev/goldsaya/scraps/ca26eed4046fd2",
+      "title": "Durable Functions - Zenn",
+      "content": "ヒントとベストプラクティスオーケストレータ関数内での非決定論的な操作（現在の日時の取得、乱数の生成、外部システムとの通信など）は避けるべきです。",
+      "score": 0.7004242,
+      "raw_content": null
+    },
+    {
+      "url": "https://zenn.dev/microsoft/articles/durable-functions-monte-carlo",
+      "title": "Durable Functionsでモンテカルロシミュレーションを実行する - Zenn",
+      "content": "Azure Functions - Durable Functionsでモンテカルロシミュレーションを実行する Image 1: Microsoft (有志)Microsoft (有志) Image 2: Microsoft (有志)Microsoft (有志)Publicationへの投稿 Azure Functions - Durable Functionsでモンテカルロシミュレーションを実行する Durable Functions https://learn.microsoft.com/ja-jp/azure/azure-functions/durable/ using Microsoft.Azure.Functions.Worker; using Microsoft.DurableTask.Client; using Microsoft.DurableTask; using Microsoft.Azure.Functions.Worker.Http; [Function(\"durable\")] public static async Task<HttpResponseData> Starter([HttpTrigger(AuthorizationLevel.Function, \"post\")] HttpRequestData req,[DurableClient] DurableTaskClient client) if (config is null) return req.CreateResponse(System.Net.HttpStatusCode.BadRequest); var instanceId = await client.ScheduleNewOrchestrationInstanceAsync(nameof(Orchestration), config); public static async Task<Response> Orchestration([OrchestrationTrigger] TaskOrchestrationContext context) var response = new Response(); Task<double> task = context.CallActivityAsync<double>(nameof(IterationActivity), config.SamplingPerIteration); var iterations = (await Task.WhenAll(parallelTasks)).ToList(); response.Iterations = iterations; response.SimulatedMedianValue = response.Iterations.Median(); response.SimulatedAverageValue = response.Iterations.Average(); response.SimulatedModeValue = response.Iterations.Mode(); var inCircleCount = 0; var pi = 4 * ((double)inCircleCount / (double)samplingPerIteration); \"purgeHistoryDeleteUri\": \"https://xxxxxxxxxxxxx.azurewebsites.net/runtime/webhooks/durabletask/instances/1a63ddxxxxxxx220f0d6eb? \"sendEventPostUri\": \"https://xxxxxxxxxxxxx.azurewebsites.net/runtime/webhooks/durabletask/instances/1a63ddxxxxxxx220f0d6eb/raiseEvent/{eventName}? \"statusQueryGetUri\": \"https://xxxxxxxxxxxxx.azurewebsites.net/runtime/webhooks/durabletask/instances/1a63ddxxxxxxx220f0d6eb? \"terminatePostUri\": \"https://xxxxxxxxxxxxx.azurewebsites.net/runtime/webhooks/durabletask/instances/1a63ddxxxxxxx220f0d6eb/terminate? Image 23: Microsoft (有志) Image 25: Microsoft (有志) Microsoft (有志)Publication 1.   Durable Functions",
+      "score": 0.6158511,
+      "raw_content": null
+    },
+    {
+      "url": "https://learn.microsoft.com/ja-jp/azure/azure-functions/durable/durable-functions-troubleshooting-guide",
+      "title": "Durable Functions トラブルシューティング ガイド - Azure ...",
+      "content": "「Durable Functions のベスト プラクティスと診断ツール」のガイダンスを確認してください。 一部の問題は、既知の Durable Functions アンチ",
+      "score": 0.43165663,
+      "raw_content": null
+    },
+    {
+      "url": "https://zenn.dev/microsoft/articles/return-value-from-eternal-orchestrations",
+      "title": "Durable Functions で ContinueAsNew を使っているオーケスト ...",
+      "content": "Durable Functions で、そこそこ長い処理をする可能性があるオーケストレーター関数では適宜 ContinueAsNew を使って新しいインプットと共に自分自身",
+      "score": 0.31025586,
+      "raw_content": null
+    },
+    {
+      "url": "https://zenn.dev/logbuild/articles/1eb686d401047a",
+      "title": "Durable Functionsの非同期HTTP APIパターンを使ってZIPファイル ...",
+      "content": "非同期 HTTP API パターンでは、外部クライアントとの間の実行時間の長い操作の状態を調整するという問題に対処します。 このパターンを実装する一般的な",
+      "score": 0.25104174,
+      "raw_content": null
+    }
+  ],
+  "response_time": 1.35
+}

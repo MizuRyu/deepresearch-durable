@@ -1,4 +1,5 @@
 import os
+import json
 
 from loguru import logger
 from azure.core.credentials import AzureKeyCredential
@@ -32,7 +33,7 @@ async def call_aoai(system_prompt, prompt):
 
 # gpt-4.1-nano json output
 async def call_aoai_json_mode(system_prompt, prompt):
-    logger.info(f"[call_aoai_json_mode] Start Calling AOAI with prompt...")
+    logger.info(f"[call_aoai_json_mode] Start Calling AOAI Json Mode with prompt...")
     async with ChatCompletionsClient(
         endpoint=os.getenv("AZURE_OPENAI_ENDPOINT", ""),
         credential=AzureKeyCredential(os.getenv("AZURE_OPENAI_API_KEY", ""))
@@ -52,7 +53,14 @@ async def call_aoai_json_mode(system_prompt, prompt):
         )
         usage_total_token = response.usage.total_tokens if response.usage else 0
         logger.info(f"[call_aoai_json_mode] Successfully called AOAI in JSON mode. Total tokens: {usage_total_token}")
-        return response
+
+        try:
+            parsed_response = json.loads(response.choices[0].message.content)
+        except json.JSONDecodeError as e:
+            logger.error(f"[call_aoai_json_mode] JSON decoding error: {e}")
+            logger.error(f"Response content: {response.choices[0].message.content}")
+            raise
+        return parsed_response
 
 
 # python3 -m src.core.llms
@@ -63,6 +71,6 @@ if __name__ == "__main__":
 
     load_dotenv()
     system_prompt = "You are a helpful assistant."
-    prompt = "What is the capital of France?"
-    response = asyncio.run(call_aoai(system_prompt, prompt))
+    prompt = "What is the capital of France? JSONで出力して"
+    response = asyncio.run(call_aoai_json_mode(system_prompt, prompt))
     print(response)

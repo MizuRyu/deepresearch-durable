@@ -16,11 +16,15 @@ def _append_unique(lst, items):
 def researchState_entity(context: df.DurableEntityContext):
     state = context.get_state(lambda: {
         "question": "",
-        "followups": [],
+        "followups": "",
+        "followup_answer": "",
         "queries": [],
-        "urls": [],
+        "web_research_results": [],
+        "sources": [],
         "summaries": [],
-        "answer": ""
+        "reflections": [],
+        "report": "",
+        "loop_count": 0
     })
 
     operation = context.operation_name
@@ -30,16 +34,27 @@ def researchState_entity(context: df.DurableEntityContext):
     if operation == "init":
         state["question"] = data
     elif operation == "append_followups":
-        _append_unique(state["followups"], data)
+        state["followups"] = data
+    elif operation == "append_followup_answer":
+        state["followup_answer"] = data
     elif operation == "append_queries":
-        _append_unique(state["queries"], data)
-    elif operation == "append_urls":
-        _append_unique(state["urls"], data)
-    elif operation == "append_summary":
-        state["summaries"].append(data)
+        items = data["queries"] if isinstance(data, dict) else data
+        _append_unique(state["queries"], items)
+    elif operation == "append_web_research_results":
+        _append_unique(state["web_research_results"], [data])
+    elif operation == "append_sources":
+        _append_unique(state["sources"], data)
+    elif operation == "append_summaries":
+        _append_unique(state["summaries"], [data])
+    elif operation == "append_reflections":
+        _append_unique(state["reflections"], [data])
     elif operation == "finalize":
-        state["answer"] = data
+        state["report"] = data
+    elif operation == "increment_loop_count":
+        state["loop_count"] += 1
     elif operation == "get":
+        logger.info(f"Get state: {state}")
+        context.set_result(state)
         pass  # no-op, just return
     else:
         logger.warning(f"Unknown operation {operation}")

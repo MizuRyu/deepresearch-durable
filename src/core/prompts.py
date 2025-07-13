@@ -39,25 +39,47 @@ FOLLOWUP_INSTRUCTIONS = """
 
 QUERY_WRITER_INSTRUCTIONS="""あなたの目的は、的確で効果的なWeb検索クエリを作成することです。
 
-<CONTEXT>
+<REQUIREMENTS>
 本日の日付: {current_date}
-クエリは必ず本日時点で最新の情報を取得できるように作成してください。
+- クエリは必ず本日時点で最新の情報を取得できるように作成してください。
+生成言語指定: {lang}
+- 指定された言語で、検索クエリを生成してください。
+- 最大 {max_queries} 件まで。**重複しない** Web 検索クエリを生成してください。
+- クエリは 5 ~ 12 語程度で簡潔かつ具体的に記載すること。
+- 類似度が高い（Cosine Similarity >= 0.9）クエリは除外すること。
+</REQUIREMENTS>
 
 <TOPIC>
 {research_topic}
 </TOPIC>
 
-<FORMAT>
-必ず以下の2つのキーを含むJSON形式で回答してください。
-- "query": 実際に使用する検索クエリ（英語で生成する）
-- "rationale": なぜそのクエリが適切なのかを簡潔に説明した文章
+<Messages>
+ユーザーの質問意図(topic)を明確化するために実施したやり取りが記載されています。
+調査タスクのスコープを明確にするために、以下のメッセージを参考にしてください。
+---
+Researcher: {followups}
+User: {answer}
+</Messages>
 
+<FORMAT>
+必ず以下の2つのキーを含む複数のJSON形式で回答してください。
+- "query": 実際に使用する検索クエリ（英語で生成する）
+- "rationale": なぜそのクエリが適切なのかを簡潔に説明した文章。必ず日本語で生成すること
 </FORMAT>
+
 <EXAMPLE>
-{
-    "query": "machine learning transformer architecture explained",
-    "rationale": "transformerモデルの基本的な構造を理解するために役立つ情報を検索する"
-}
+{{
+    "queries": [
+        {{
+            "query": "machine learning transformer architecture explained",
+            "rationale": "transformerモデルの基本的な構造を理解するため"
+        }},
+        {{
+            "query": "transformer model architecture overview",
+            "rationale": "transformerモデルの全体像を把握するため"
+        }}
+    ]
+}}
 </EXAMPLE>
 
 必ずJSON形式のみで回答し、余計なタグやバッククォートは付けないでください。
@@ -101,8 +123,19 @@ REFLECTION_INSTRUCTIONS = """あなたは{research_topic}に関する要約を�
 </GOAL>
 
 <REQUIREMENTS>
-フォローアップ質問は、検索時に適切な結果を得られるように自己完結的で、必要なコンテキストが含まれていることを確認してください。
+- フォローアップ質問は、検索時に適切な結果を得られるように自己完結的で、必要なコンテキストが含まれていることを確認してください。
+生成言語指定: {lang}
+- 必ず指定された言語で、検索クエリを生成してください。
+- クエリは 5 ~ 12 語程度で簡潔かつ具体的に記載すること。
 </REQUIREMENTS>
+
+<Messages>
+ユーザーの質問意図(topic)を明確化するために実施したやり取りが記載されています。
+ユーザーが求めるoutputの参考として、以下のメッセージを活用してください。
+---
+Researcher: {followups}
+User: {answer}
+</Messages>
 
 <FORMAT>
 以下のキーを含むJSON形式で出力してください。
@@ -113,10 +146,10 @@ REFLECTION_INSTRUCTIONS = """あなたは{research_topic}に関する要約を�
 <TASK>
 要約を慎重に検討し、不足する情報を見つけ、それを補うためのフォローアップクエリを作成してください。
 
-{
+{{
     "knowledge_gap": "要約内にパフォーマンス指標やベンチマークについての情報が不足している",
     "follow_up_query": "[特定の技術]の評価に用いられる代表的なパフォーマンスベンチマークと評価指標は何か？"
-}
+}}
 </TASK>
 
 必ずJSON形式のみで回答し、余計なタグやバッククォートは付けないでください。

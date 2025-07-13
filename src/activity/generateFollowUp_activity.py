@@ -15,9 +15,9 @@ async def generateFollowUp_activity(question: str):
     )
     response = await call_aoai(
         system_prompt=formatted_prompt,
-        prompt=question
+        prompt="ユーザーの質問を具体的にするフォローアップ質問を生成すること:"
     )
-    logger.info(f"Response: {response}")
+    logger.info(f"【generateFollowUp_activity】Response: {response}")
     return response
 
 
