@@ -40,21 +40,22 @@ FOLLOWUP_INSTRUCTIONS = """
 QUERY_WRITER_INSTRUCTIONS="""あなたの目的は、的確で効果的なWeb検索クエリを作成することです。
 
 <CONTEXT>
-本日の日付: July 09, 2025
+本日の日付: {current_date}
 クエリは必ず本日時点で最新の情報を取得できるように作成してください。
 
 <TOPIC>
 {research_topic}
+</TOPIC>
 
 <FORMAT>
-必ず以下の3つのキーを含むJSON形式で回答してください。
-- "query": 実際に使用する検索クエリ
+必ず以下の2つのキーを含むJSON形式で回答してください。
+- "query": 実際に使用する検索クエリ（英語で生成する）
 - "rationale": なぜそのクエリが適切なのかを簡潔に説明した文章
 
 </FORMAT>
 <EXAMPLE>
 {
-    "query": "機械学習 transformerアーキテクチャの基本構造の解説",
+    "query": "machine learning transformer architecture explained",
     "rationale": "transformerモデルの基本的な構造を理解するために役立つ情報を検索する"
 }
 </EXAMPLE>

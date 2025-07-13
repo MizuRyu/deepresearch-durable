@@ -11,12 +11,11 @@ from ..core.llms import call_aoai
 async def generateFollowUp_activity(question: str):
     logger.info(f"[generateFollowUp_activity] Start generating follow-up questions for: {question}")
     formatted_prompt = FOLLOWUP_INSTRUCTIONS.format(
-        current_date=get_current_date(),
         question=question
     )
     response = await call_aoai(
         system_prompt=formatted_prompt,
-        prompt=formatted_prompt
+        prompt=question
     )
     logger.info(f"Response: {response}")
     return response
