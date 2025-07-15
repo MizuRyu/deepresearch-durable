@@ -37,6 +37,11 @@ RESEARCH_STEPS = {
         'description': 'next Action ルーティング処理',
         'icon': '⚙️'
     },
+    'waiting_for_followup': {
+        'name': 'フォローアップ回答待ち',
+        'description': 'ユーザーのフォローアップ回答を待機中',
+        'icon': '⌛'
+    },
     'finalize': {
         'name': 'レポート作成',
         'description': '調査結果まとめ',
@@ -72,6 +77,16 @@ class DurableFunctionsClient:
             st.error(f"ステータス取得エラー: {str(e)}")
             return {}
 
+    @staticmethod
+    def send_followup(instance_id: str, event_name: str, answer: str) -> None:
+        """フォローアップ回答を送信"""
+        try:
+            url = f"{AZURE_FUNCTIONS_URL}/runtime/webhooks/durabletask/instances/{instance_id}/raiseEvent/{event_name}"
+            response = requests.post(url, json={"data": answer}, timeout=10)
+            response.raise_for_status()
+        except Exception as e:
+            st.error(f"フォローアップ送信エラー: {e}")
+
 
 def initialize_session_state():
     """セッション状態の初期化"""
@@ -101,6 +116,10 @@ def initialize_session_state():
         st.session_state.all_sources = []
     if 'view_mode' not in st.session_state:
         st.session_state.view_mode = 'process'
+    if 'followup_sent' not in st.session_state:
+        st.session_state.followup_sent = False
+    if 'saved_followup_answer' not in st.session_state:
+        st.session_state.saved_followup_answer = ""
 
 
 def render_step_entry(step_info: Dict, loop_count: int = 0) -> None:
@@ -110,6 +129,19 @@ def render_step_entry(step_info: Dict, loop_count: int = 0) -> None:
     details = step_info.get('details', {})
     timestamp = step_info.get('timestamp', '')
 
+    if step_key == 'waiting_for_followup':
+        with st.container():
+            st.markdown(
+                f"<strong>✅ {RESEARCH_STEPS[step_key]['icon']} {RESEARCH_STEPS[step_key]['name']}</strong>",
+                unsafe_allow_html=True
+            )
+            st.write("**フォローアップ質問:**")
+            st.write(details.get('followups', ''))
+            if st.session_state.saved_followup_answer:
+                st.write("**ユーザー回答:**")
+                st.write(st.session_state.saved_followup_answer)
+        return
+    
     step_config = RESEARCH_STEPS.get(step_key, {})
     icon = step_config.get('icon', '⚙️')
     name = step_config.get('name', step_key)
@@ -211,6 +243,9 @@ def update_progress_from_custom_status(custom_status: Dict[str, Any]) -> None:
     if step_type:
         st.session_state.current_loop = loop_count
         st.session_state.current_step = step_type
+        if step_type == 'waiting_for_followup':
+            # イベントIDを保持
+            st.session_state.event_id = data.get('eventId')
 
         unique_id = f"{step_type}_{loop_count}_{int(time.time() * 1000)}"
         step_entry = {
@@ -353,6 +388,25 @@ def main():
 
     if st.session_state.research_active:
         poll_durable_functions()
+        # フォローアップ回答待機時のUI
+        if st.session_state.current_step == 'waiting_for_followup' and not st.session_state.followup_sent:
+            last_entry = st.session_state.step_history[-1]
+            followup = last_entry.get('details', {}).get('followups', '')
+            st.subheader("フォローアップ回答")
+            st.write(followup)
+            answer = st.text_input("フォローアップ回答を入力してください", key="followup_answer")
+            if st.button("送信", key="send_followup"):
+                DurableFunctionsClient.send_followup(
+                    st.session_state.instance_id,
+                    f"followup_response_{st.session_state.event_id}",
+                    answer
+                )
+                # 回答送信後、通常のポーリングに戻す
+                st.session_state.saved_followup_answer = answer
+                st.session_state.followup_sent = True
+                st.session_state.current_step = None
+                st.rerun()
+            return
         st.markdown("---")
         col1, col2 = st.columns([3, 1])
         with col1:

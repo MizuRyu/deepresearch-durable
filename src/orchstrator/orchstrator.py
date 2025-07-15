@@ -23,40 +23,37 @@ def deepResearch_orchestrator(context: df.DurableOrchestrationContext):
     event_id = str(context.new_guid())
 
     # 1. フォローアップ生成
-    if os.getenv("ENABLE_FOLLOWUP", "true"):
+    if os.getenv("ENABLE_FOLLOWUP", "true").lower() == "true":
         followups = yield context.call_activity("generateFollowUp_activity", question)
         if followups:
             context.signal_entity(entity_id, "append_followups", followups)
+            # UIにフォローアップ回答待機を通知
+            context.set_custom_status({
+                "type": "waiting_for_followup",
+                "loopCount": loop_count,
+                "data": {
+                    "followups": followups,
+                    "eventId": event_id
+                }
+            })
+            # ユーザーのフォローアップ回答を待つ
+            answer = yield context.wait_for_external_event(f"followup_response_{event_id}")
+            context.signal_entity(entity_id, "append_followup_answer", answer)
+        else:
+            followups = ""
+            answer = ""
     else:
         followups = ""
-
-    # 外部イベント（ユーザー承認ワークフロー）
-    # context.set_custom_status({
-    #     "custom_status": "waiting_for_followup",
-    #     "followup": followup,
-    #     "eventId": event_id
-    # })
-    # answer = yield context.wait_for_external_event(
-    #     name=f"followup_response_{event_id}"
-    # )
-    
-    # logger.info(f"[DeepResearch Orchestrator] Received follow-up response: {answer}")
-
-    # 2. 検索クエリ生成
-    if os.getenv("ENABLE_FOLLOWUP", "true").lower() == "true":
-        answer = "実装に関するベストプラクティスや実際の事例を知りたいです。" #FIXME
-    else:
         answer = ""
-    context.signal_entity(entity_id, "append_followup_answer", answer)
+    # 2. 検索クエリ生成
     queries = yield context.call_activity(
         "generateSearchQuery_activity",
         {
-            "question": question, 
-            "followups": followups, 
+            "question": question,
+            "followups": followups,
             "answer": answer
         }
     )
-    
     context.signal_entity(entity_id, "append_queries", queries)
     context.set_custom_status({
         "type": "generate_query",
