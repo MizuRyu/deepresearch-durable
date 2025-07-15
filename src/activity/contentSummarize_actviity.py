@@ -31,7 +31,7 @@ async def contentSummarize_activity(input: dict):
         prompt=human_message_content
     )
 
-    logger.info(f"【contentSummarize_activity】Response: {response}")
+    logger.info(f"[contentSummarize_activity] Response: {response[:50]}")
     logger.info(f"[contentSummarize_activity] End Activity")
     return response
 

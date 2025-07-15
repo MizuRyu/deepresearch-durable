@@ -42,7 +42,9 @@ async def generateReport_activity(
 
     report_content = f"## Summary\n{final_summary}\n\n### Sources:\n"
     for source in about_sources:
-        report_content += f"- {source}\n"
+        title = source.get('title', 'No Title')
+        url = source.get('url', '#')
+        report_content += f"- [{title}]({url})\n"
 
     logger.info("[generateReport_activity] End Activity")
 

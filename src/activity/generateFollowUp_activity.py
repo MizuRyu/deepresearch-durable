@@ -17,7 +17,8 @@ async def generateFollowUp_activity(question: str):
         system_prompt=formatted_prompt,
         prompt="ユーザーの質問を具体的にするフォローアップ質問を生成すること:"
     )
-    logger.info(f"【generateFollowUp_activity】Response: {response}")
+    logger.info(f"[generateFollowUp_activity] Response: {response}")
+    logger.info(f"[generateFollowUp_activity] End Activity")
     return response
 
 

@@ -3,6 +3,20 @@ from datetime import datetime
 def get_current_date():
     return datetime.now().strftime("%B %d, %Y")
 
+def build_clarify_exchange(followups, answer):
+    """
+    深掘り質問のやり取りを構造化
+    """
+    return f"""
+    <Messages>
+    ユーザーの質問意図(topic)を明確化するために実施したやり取りが記載されています。
+    調査タスクのスコープを明確にするために、以下のメッセージを参考にしてください。
+    ---
+    Researcher: {followups}
+    User: {answer}
+    </Messages>
+    """
+
 FOLLOWUP_INSTRUCTIONS = """
 
 <GOAL>
@@ -53,13 +67,7 @@ QUERY_WRITER_INSTRUCTIONS="""あなたの目的は、的確で効果的なWeb検
 {research_topic}
 </TOPIC>
 
-<Messages>
-ユーザーの質問意図(topic)を明確化するために実施したやり取りが記載されています。
-調査タスクのスコープを明確にするために、以下のメッセージを参考にしてください。
----
-Researcher: {followups}
-User: {answer}
-</Messages>
+{clarify_exchange}
 
 <FORMAT>
 必ず以下の2つのキーを含む複数のJSON形式で回答してください。
@@ -156,12 +164,3 @@ User: {answer}
 """
 
 
-ANSWER_PROMPT = """
-あなたは専門的なリサーチャーです。
-以下の情報ソース要約をもとに、ユーザー質問
-「{question}」
-に対し、根拠を引用しつつ日本語で簡潔に回答してください。
-###
-{sources}
-###
-"""

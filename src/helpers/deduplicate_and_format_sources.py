@@ -53,9 +53,8 @@ def deduplicate_and_format_sources(
     # 出力用フォーマット組み立て
     formatted_text = "Sources:\n\n"
     for i, source in enumerate(unique_sources.values(), 1):
-        formatted_text += f"Source: {source['title']}\n===\n"
-        formatted_text += f"URL: {source['url']}\n===\n"
-        formatted_text += f"Most relevant content from source: {source['content']}\n===\n"
+        formatted_text += f"記事タイトル: {source['title']}\nーー\n"
+        formatted_text += f"内容抜粋: {source['content']}\nーー\n"
 
         if fetch_full_page:
             # Tavily の raw_content を使う場合
@@ -76,6 +75,13 @@ def deduplicate_and_format_sources(
                 try:
                     resp = requests.get(url, headers=headers, timeout=10)
                     resp.raise_for_status()
+
+                    content_type = resp.headers.get("Content-Type", "")
+                    if "text/html" not in content_type:
+                        logger.warning(f"URL {url} does not return HTML content.")
+                        full_text = ""
+                        continue
+                    
                     raw_content_html = resp.content
                     charset = chardet.detect(raw_content_html).get("encoding") or "utf-8"
                     raw_content_html = raw_content_html.decode(charset, errors="replace")

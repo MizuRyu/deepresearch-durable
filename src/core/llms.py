@@ -27,7 +27,7 @@ async def call_aoai(system_prompt, prompt):
             presence_penalty=0.0
         )
         usage_total_token = response.usage.total_tokens if response.usage else 0
-        logger.info(f"[call_aoai] Successfully called AOAI. Total tokens: {usage_total_token}")
+        logger.info(f"[call_aoai] Successfully called AOAI. System Prompt: {system_prompt[:20]} Total tokens: {usage_total_token}")
         return response.choices[0].message.content
 
 
@@ -52,7 +52,7 @@ async def call_aoai_json_mode(system_prompt, prompt):
             response_format="json_object"
         )
         usage_total_token = response.usage.total_tokens if response.usage else 0
-        logger.info(f"[call_aoai_json_mode] Successfully called AOAI in JSON mode. Total tokens: {usage_total_token}")
+        logger.info(f"[call_aoai_json_mode] Successfully called AOAI in JSON mode. System Prompt: {system_prompt[:20]} Total tokens: {usage_total_token}")
 
         try:
             parsed_response = json.loads(response.choices[0].message.content)
@@ -61,6 +61,12 @@ async def call_aoai_json_mode(system_prompt, prompt):
             logger.error(f"Response content: {response.choices[0].message.content}")
             raise
         return parsed_response
+
+# # 4o-mini
+# async def call_aoai_reasoning(system_prompt, prompt):
+
+# # 4o-mini json output
+# async def call_aoai_reasoning_json_mode(system_prompt, prompt):
 
 
 # python3 -m src.core.llms

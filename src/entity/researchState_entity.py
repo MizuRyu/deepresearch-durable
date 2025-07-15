@@ -29,7 +29,7 @@ def researchState_entity(context: df.DurableEntityContext):
 
     operation = context.operation_name
     data = context.get_input()
-    logger.info(f"Entity op: {operation} data: {str(data)[:120]}")
+    logger.info(f"Entity op: {operation} data: {str(data)[:20]}")
 
     if operation == "init":
         state["question"] = data
@@ -53,7 +53,6 @@ def researchState_entity(context: df.DurableEntityContext):
     elif operation == "increment_loop_count":
         state["loop_count"] += 1
     elif operation == "get":
-        logger.info(f"Get state: {state}")
         context.set_result(state)
         pass  # no-op, just return
     else:

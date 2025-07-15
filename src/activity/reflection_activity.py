@@ -24,16 +24,15 @@ async def reflection_activity(input: dict):
 
     formatted_prompt = REFLECTION_INSTRUCTIONS.format(
         research_topic=topic,
-        lang="en",
+        lang="ja", # FIXME: ENV
         followups=followups,
         answer=followup_answer
     )
-    logger.info(f"【reflection_activity】Formatted Prompt: {formatted_prompt}")
     response = await call_aoai_json_mode(
         system_prompt=formatted_prompt,
         prompt=human_message_content,
     )
-    logger.info(f"【reflection_activity】Response: {response}")
+    logger.info(f"[reflection_activity] Response: {response}")
     logger.info(f"[reflection_activity] End Activity")
     return response
 
