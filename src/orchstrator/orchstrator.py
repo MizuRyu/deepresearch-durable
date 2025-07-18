@@ -22,6 +22,8 @@ def deepResearch_orchestrator(context: df.DurableOrchestrationContext):
     # contextのGUIDを使うと、リプレイ時にも同じIDが使われる
     event_id = str(context.new_guid())
 
+    followups = ""
+    answer = ""
     # 1. フォローアップ生成
     if os.getenv("ENABLE_FOLLOWUP", "true").lower() == "true":
         followups = yield context.call_activity("generateFollowUp_activity", question)
@@ -39,12 +41,7 @@ def deepResearch_orchestrator(context: df.DurableOrchestrationContext):
             # ユーザーのフォローアップ回答を待つ
             answer = yield context.wait_for_external_event(f"followup_response_{event_id}")
             context.signal_entity(entity_id, "append_followup_answer", answer)
-        else:
-            followups = ""
-            answer = ""
-    else:
-        followups = ""
-        answer = ""
+
     # 2. 検索クエリ生成
     queries = yield context.call_activity(
         "generateSearchQuery_activity",
@@ -98,7 +95,7 @@ def deepResearch_orchestrator(context: df.DurableOrchestrationContext):
             state = yield context.call_entity(entity_id, "get")
             existing_summary = state["summaries"][-1] if state["summaries"] else ""
 
-            # summarize
+            # summarize: 各Web検索結果を要約
             updated_summary = yield context.call_activity(
                 "contentSummarize_activity",
                 {
@@ -122,7 +119,7 @@ def deepResearch_orchestrator(context: df.DurableOrchestrationContext):
 
         state = yield context.call_entity(entity_id, "get")
         existing_summary = state["summaries"][-1] if state["summaries"] else ""
-        # reflection
+        # reflection: 追加調査必要か
         reflection = yield context.call_activity(
             "reflection_activity",
             {
